@@ -396,82 +396,21 @@ The base URL for all v1 endpoints is `/api/v1`.
 
 ### Telemetry
 
-**NEW!** Comprehensive telemetry endpoints providing detailed car performance data including speed, RPM, throttle, brake, DRS, steering, position coordinates, and advanced analytics.
+Simplified telemetry endpoints providing essential car performance data and track dominance visualization.
 
--   **GET `/telemetry/session/{year}/{event}/{session}`**
-    -   Description: Get comprehensive telemetry data for all drivers in a session.
+-   **GET `/telemetry/fastest-lap/{year}/{event}/{session}/{driver}`**
+    -   Description: Get detailed telemetry data for a driver's fastest lap in a session.
     -   Path Parameters:
         -   `year` (int, required): Season year.
         -   `event` (str, required): Event name or round number.
         -   `session` (str, required): Session type (R, Q, S, FP1, FP2, FP3).
-    -   Query Parameters:
-        -   `drivers` (str, optional): Comma-separated driver abbreviations (e.g., 'VER,HAM').
-        -   `laps` (str, optional): Comma-separated lap numbers (e.g., '1,5,10').
-        -   `max_laps_per_driver` (int, optional, default: 5): Maximum laps per driver to return.
-    -   Response Format: `SessionTelemetryResponse`
-        ```json
-        {
-          "session_info": {
-            "year": 2023,
-            "event": "Bahrain Grand Prix",
-            "session_type": "R",
-            "track_name": "Bahrain Grand Prix",
-            "country": "Bahrain",
-            "date": "2023-03-05T15:00:00",
-            "total_laps": 1150
-          },
-          "drivers": ["VER", "HAM", "PER"],
-          "laps": [
-            {
-              "driver": "VER",
-              "lap_number": 1,
-              "lap_time": 95.234,
-              "is_accurate": true,
-              "max_speed": 315.2,
-              "avg_speed": 185.6,
-              "max_rpm": 11800,
-              "avg_rpm": 8950.5,
-              "throttle_percentage": 68.5,
-              "brake_percentage": 15.2,
-              "drs_percentage": 22.8,
-              "gear_changes": 24,
-              "telemetry_points": [
-                {
-                  "time": 1234.567,
-                  "distance": 0.0,
-                  "x": 1234.56,
-                  "y": 2345.67,
-                  "z": 12.34,
-                  "speed": 285.4,
-                  "rpm": 11500,
-                  "n_gear": 7,
-                  "throttle": 95.2,
-                  "brake": false,
-                  "drs": 1,
-                  "steering": -12.5
-                }
-                // ... more telemetry points throughout the lap
-              ]
-            }
-          ]
-        }
-        ```
-
--   **GET `/telemetry/lap/{year}/{event}/{session}/{driver}/{lap_number}`**
-    -   Description: Get detailed telemetry data for a specific lap.
-    -   Path Parameters:
-        -   `year` (int, required): Season year.
-        -   `event` (str, required): Event name or round number.
-        -   `session` (str, required): Session type.
-        -   `driver` (str, required): Driver abbreviation (e.g., 'VER').
-        -   `lap_number` (int, required): Specific lap number.
-    -   Response Format: `LapTelemetryResponse`
+        -   `driver` (str, required): Driver abbreviation (e.g., 'VER', 'HAM').
+    -   Response Format: `FastestLapTelemetryResponse`
         ```json
         {
           "driver": "VER",
-          "lap_number": 15,
-          "lap_time": 93.459,
-          "is_accurate": true,
+          "lap_number": 42,
+          "lap_time": 92.681,
           "max_speed": 318.7,
           "avg_speed": 189.3,
           "max_rpm": 11950,
@@ -481,179 +420,52 @@ The base URL for all v1 endpoints is `/api/v1`.
           "drs_percentage": 25.3,
           "gear_changes": 26,
           "telemetry_points": [
-            // Detailed telemetry data points with coordinates, speeds, etc.
+            {
+              "time": 1234.567,
+              "distance": 0.0,
+              "speed": 285.4,
+              "rpm": 11500,
+              "n_gear": 7,
+              "throttle": 95.2,
+              "brake": false,
+              "drs": 1
+            }
+            // ... more telemetry points throughout the lap
           ]
         }
         ```
 
--   **GET `/telemetry/compare/{year}/{event}/{session}`**
-    -   Description: Compare telemetry data between two drivers.
+-   **GET `/telemetry/track-dominance/{year}/{event}/{session}`**
+    -   Description: Get track dominance comparison between two drivers with SVG visualization.
     -   Path Parameters:
         -   `year` (int, required): Season year.
         -   `event` (str, required): Event name or round number.
-        -   `session` (str, required): Session type.
+        -   `session` (str, required): Session type (R, Q, S, FP1, FP2, FP3).
     -   Query Parameters:
         -   `driver1` (str, required): First driver abbreviation.
         -   `driver2` (str, required): Second driver abbreviation.
-        -   `lap_type` (str, optional, default: "fastest"): Lap type (fastest, first, last, specific).
-        -   `lap1` (int, optional): Specific lap number for driver 1 (if lap_type is 'specific').
-        -   `lap2` (int, optional): Specific lap number for driver 2 (if lap_type is 'specific').
-    -   Response Format: `DriverComparisonResponse`
+        -   `lap1_identifier` (str, optional, default: "fastest"): Lap identifier for driver 1 ('fastest' or lap number).
+        -   `lap2_identifier` (str, optional, default: "fastest"): Lap identifier for driver 2 ('fastest' or lap number).
+        -   `driver1_color` (str, optional, default: "#FF0000"): Hex color code for driver 1.
+        -   `driver2_color` (str, optional, default: "#0000FF"): Hex color code for driver 2.
+    -   Response Format: `TrackDominanceResponse`
         ```json
         {
-          "driver_1": "VER",
-          "driver_2": "HAM",
-          "lap_1": {
-            // Complete lap telemetry for driver 1
-          },
-          "lap_2": {
-            // Complete lap telemetry for driver 2
-          },
-          "comparison_stats": {
-            "time_difference": -0.284,
-            "speed_difference": {
-              "max_speed_diff": 2.3,
-              "avg_speed_diff": 1.7
-            },
-            "driving_style": {
-              "throttle_diff": 3.2,
-              "brake_usage_diff": -1.8,
-              "drs_usage_diff": 2.1
-            }
-          }
-        }
-        ```
-
--   **GET `/telemetry/summary/{year}/{event}/{session}/{driver}`**
-    -   Description: Get comprehensive telemetry summary for a driver in a session.
-    -   Path Parameters:
-        -   `year` (int, required): Season year.
-        -   `event` (str, required): Event name or round number.
-        -   `session` (str, required): Session type.
-        -   `driver` (str, required): Driver abbreviation.
-    -   Response Format: `TelemetrySummaryResponse`
-        ```json
-        {
-          "driver": "VER",
-          "session_type": "R",
-          "total_laps": 57,
-          "fastest_lap": {
-            // Complete fastest lap telemetry data
-          },
-          "session_max_speed": 324.5,
-          "session_avg_speed": 187.8,
-          "session_max_rpm": 12000,
-          "total_distance": 308550.0,
-          "avg_throttle_usage": 69.3,
-          "avg_brake_usage": 16.7,
-          "aggressive_braking_count": 12,
-          "drs_usage_percentage": 23.8,
-          "gear_change_frequency": 25.4
-        }
-        ```
-
--   **GET `/telemetry/fastest-lap/{year}/{event}/{session}`**
-    -   Description: Get telemetry data for the fastest laps in a session.
-    -   Path Parameters:
-        -   `year` (int, required): Season year.
-        -   `event` (str, required): Event name or round number.
-        -   `session` (str, required): Session type.
-    -   Query Parameters:
-        -   `limit` (int, optional, default: 10): Number of fastest laps to return.
-    -   Response Format: `List[LapTelemetryResponse]`
-        ```json
-        [
-          {
-            "driver": "VER",
-            "lap_number": 42,
-            "lap_time": 92.681,
-            // ... complete telemetry data for fastest lap
-          },
-          {
-            "driver": "HAM",
-            "lap_number": 38,
-            "lap_time": 92.947,
-            // ... complete telemetry data for second fastest lap
-          }
-          // ... more fastest laps
-        ]
-        ```
-
--   **GET `/telemetry/stint/{year}/{event}/{session}/{driver}`**
-    -   Description: Get telemetry data organized by tire stints for a driver.
-    -   Path Parameters:
-        -   `year` (int, required): Season year.
-        -   `event` (str, required): Event name or round number.
-        -   `session` (str, required): Session type.
-        -   `driver` (str, required): Driver abbreviation.
-    -   Response Format: `List[StintTelemetryResponse]`
-        ```json
-        [
-          {
-            "driver": "VER",
-            "stint_number": 1,
-            "start_lap": 1,
-            "end_lap": 18,
-            "tire_compound": "MEDIUM",
-            "tire_age": 18,
-            "avg_lap_time": 94.235,
-            "fastest_lap_time": 93.124,
-            "tire_degradation": 0.025,
-            "avg_speed": 186.4,
-            "avg_throttle": 68.9,
-            "avg_brake_usage": 17.2,
-            "stint_laps": [
-              // Complete telemetry for each lap in the stint
-            ]
-          }
-          // ... more stints
-        ]
-        ```
-
--   **GET `/telemetry/track-analysis/{year}/{event}`**
-    -   Description: Get track analysis based on telemetry data from all drivers.
-    -   Path Parameters:
-        -   `year` (int, required): Season year.
-        -   `event` (str, required): Event name or round number.
-    -   Query Parameters:
-        -   `session` (str, optional, default: "R"): Session type for analysis.
-    -   Response Format: `TrackDataResponse`
-        ```json
-        {
-          "track_name": "Bahrain Grand Prix",
-          "track_length": 5412.0,
-          "corner_count": 14,
-          "speed_zones": [
+          "sections": [
             {
-              "zone_number": 1,
-              "start_distance": 0.0,
-              "end_distance": 270.6,
-              "zone_type": "high_speed",
-              "avg_speed": 285.4,
-              "max_speed": 324.5
+              "id": "segment_1",
+              "name": "Segment 1",
+              "type": "sector",
+              "path": "M 123.45 234.56 L 234.56 345.67 L 345.67 456.78",
+              "driver1_advantage": 0.125
             }
-            // ... more speed zones
+            // ... more track sections with SVG paths
           ],
-          "braking_zones": [
-            {
-              "zone_number": 1,
-              "start_distance": 240.0,
-              "end_distance": 290.0,
-              "brake_intensity": 85.6,
-              "avg_speed": 125.3
-            }
-            // ... more braking zones
-          ],
-          "drs_zones": [
-            {
-              "zone_number": 1,
-              "start_distance": 4800.0,
-              "end_distance": 5200.0,
-              "drs_usage": 95.2,
-              "avg_speed": 298.7
-            }
-            // ... more DRS zones
-          ]
+          "driver1_code": "VER",
+          "driver2_code": "HAM",
+          "driver1_color": "#FF0000",
+          "driver2_color": "#0000FF",
+          "circuit_layout": "M 0.00 0.00 L 12.34 23.45 L 23.45 34.56"
         }
         ```
 
@@ -665,36 +477,32 @@ Response models are defined in the `app/models/` directory.
 -   `drivers.py`: `DriverResponse`, `DriverSessionResponse`, `DriverStandingsResponse`
 -   `constructors.py`: `ConstructorResponse`, `ConstructorStandingsResponse`
 -   `results.py`: `RaceResultResponse`, `QualifyingResultResponse`, `SprintResultResponse`, `SessionResultResponse`, `FullSessionResultsResponse`
--   `telemetry.py`: `TelemetryPoint`, `LapTelemetryResponse`, `SessionTelemetryResponse`, `DriverComparisonResponse`, `TelemetrySummaryResponse`, `TrackDataResponse`, `StintTelemetryResponse`
+-   `telemetry.py`: `TelemetryPoint`, `FastestLapTelemetryResponse`, `TrackSection`, `TrackDominanceResponse`
 
 Each model defines the expected structure of the API response for the corresponding endpoint.
 
 ## Telemetry Data Features
 
-The telemetry endpoints provide comprehensive F1 car performance data:
+The simplified telemetry endpoints provide essential F1 car performance data and visualization:
 
 ### Available Telemetry Data
-- **Position**: X, Y, Z coordinates on track
 - **Speed**: Real-time speed in km/h
 - **Engine**: RPM, throttle position (0-100%)
-- **Brakes**: Brake status and intensity
+- **Brakes**: Brake status
 - **Transmission**: Current gear, gear changes
 - **Aerodynamics**: DRS status and usage
-- **Control**: Steering wheel angle
 - **Time**: Session time and lap distance
 
-### Advanced Analytics
-- **Lap Statistics**: Max/avg speed, RPM, throttle/brake/DRS usage percentages
-- **Driver Comparison**: Side-by-side telemetry analysis with performance differences
-- **Stint Analysis**: Tire compound performance and degradation tracking
-- **Track Analysis**: Speed zones, braking points, and DRS zones identification
-- **Session Summaries**: Comprehensive driver performance metrics
+### Key Features
+- **Fastest Lap Analysis**: Complete telemetry data for a driver's fastest lap including speed, throttle, brake, RPM, DRS, and gear data
+- **Track Dominance Visualization**: SVG-based track visualization showing which driver is faster in each track segment
+- **Color-coded Comparison**: Custom hex color support for driver comparison visualization
+- **Lap Selection**: Compare fastest laps or specific lap numbers between drivers
 
 ### Use Cases
-- **Performance Analysis**: Compare driver techniques and car performance
-- **Strategy Insights**: Analyze tire strategies and pit stop timing
-- **Track Characteristics**: Understand circuit-specific challenges
-- **Driver Development**: Identify areas for improvement
-- **Race Engineering**: Optimize car setup and race strategy
+- **Performance Analysis**: Analyze driver's fastest lap performance
+- **Visual Comparison**: See track dominance with color-coded SVG visualization
+- **Driver Techniques**: Compare throttle, brake, and gear usage patterns
+- **Track Analysis**: Understand which driver dominates different track sections
 
-All telemetry data is sourced from FastF1 and provides the same level of detail used by F1 teams for analysis. 
+All telemetry data is sourced from FastF1 and provides detailed car performance metrics for analysis. 
